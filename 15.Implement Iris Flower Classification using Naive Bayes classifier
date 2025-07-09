@@ -1,0 +1,36 @@
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+# Load Iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+target_names = iris.target_names
+
+# Split data into training and testing sets (70% train, 30% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Initialize Gaussian Naive Bayes classifier
+gnb = GaussianNB()
+
+# Train the classifier
+gnb.fit(X_train, y_train)
+
+# Predict on test data
+y_pred = gnb.predict(X_test)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Naive Bayes Accuracy: {accuracy:.2f}")
+
+# Generate confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+
+# Plot confusion matrix
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=target_names)
+disp.plot(cmap=plt.cm.Purples)
+plt.title("Naive Bayes Confusion Matrix - Iris Classification")
+plt.show()
