@@ -1,0 +1,28 @@
+import pandas as pd
+import numpy as np
+from prophet import Prophet
+import matplotlib.pyplot as plt
+
+# Generate synthetic monthly sales data
+np.random.seed(42)
+dates = pd.date_range(start='2018-01-01', periods=48, freq='MS')  # 4 years monthly data
+sales = 200 + np.arange(48) * 5 + np.random.normal(0, 20, 48)  # increasing trend + noise
+
+df = pd.DataFrame({'ds': dates, 'y': sales})
+
+# Initialize and train Prophet model
+model = Prophet()
+model.fit(df)
+
+# Create dataframe for future 12 months
+future = model.make_future_dataframe(periods=12, freq='MS')
+
+# Predict future sales
+forecast = model.predict(future)
+
+# Plot results
+model.plot(forecast)
+plt.title("Future Sales Prediction using Prophet")
+plt.xlabel("Date")
+plt.ylabel("Sales")
+plt.show()
