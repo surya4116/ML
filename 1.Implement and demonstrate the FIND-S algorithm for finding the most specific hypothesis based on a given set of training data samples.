@@ -1,0 +1,28 @@
+# Simple FIND-S algorithm
+
+def find_s(data):
+    # Start with most specific hypothesis
+    hypothesis = ['Ø'] * (len(data[0]) - 1)
+    
+    for row in data:
+        if row[-1] == 'Yes':
+            for i in range(len(hypothesis)):
+                if hypothesis[i] == 'Ø':
+                    hypothesis[i] = row[i]
+                elif hypothesis[i] != row[i]:
+                    hypothesis[i] = '?'
+    
+    return hypothesis
+
+# Training data: Last value is the label (Yes/No)
+dataset = [
+    ['Sunny', 'Warm', 'Normal', 'Strong', 'Yes'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Yes'],
+    ['Rainy', 'Cold', 'High', 'Strong', 'No'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Yes']
+]
+
+# Run FIND-S
+final_hypothesis = find_s(dataset)
+
+print("Final Hypothesis:", final_hypothesis)
