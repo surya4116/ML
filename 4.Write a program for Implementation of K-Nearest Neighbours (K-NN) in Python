@@ -1,0 +1,14 @@
+from sklearn.neighbors import KNeighborsClassifier
+
+# Features and labels
+X = [[170, 65], [160, 60], [180, 75], [158, 54], [182, 85], [155, 50]]
+y = ['Male', 'Female', 'Male', 'Female', 'Male', 'Female']
+
+# Create and train the model
+model = KNeighborsClassifier(n_neighbors=3)
+model.fit(X, y)
+
+# Predict
+test = [[165, 63]]
+prediction = model.predict(test)
+print(f"Predicted class for {test[0]}: {prediction[0]}")
