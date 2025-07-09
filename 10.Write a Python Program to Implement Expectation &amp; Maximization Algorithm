@@ -1,0 +1,96 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
+
+# Generate synthetic data: 2 Gaussian blobs
+np.random.seed(42)
+n_samples = 300
+
+mean1 = [0, 0]
+cov1 = [[1, 0.5], [0.5, 1]]
+
+mean2 = [5, 5]
+cov2 = [[1, -0.7], [-0.7, 1]]
+
+data1 = np.random.multivariate_normal(mean1, cov1, n_samples)
+data2 = np.random.multivariate_normal(mean2, cov2, n_samples)
+
+X = np.vstack((data1, data2))
+
+# Number of clusters
+K = 2
+
+# Initialize parameters randomly
+np.random.seed(0)
+weights = np.ones(K) / K
+means = X[np.random.choice(X.shape[0], K, replace=False)]
+covariances = [np.cov(X.T) for _ in range(K)]
+
+def e_step(X, weights, means, covariances):
+    """E-step: calculate responsibilities"""
+    N = X.shape[0]
+    K = len(weights)
+    responsibilities = np.zeros((N, K))
+    
+    for k in range(K):
+        rv = multivariate_normal(mean=means[k], cov=covariances[k])
+        responsibilities[:, k] = weights[k] * rv.pdf(X)
+    
+    # Normalize responsibilities across clusters
+    responsibilities /= responsibilities.sum(axis=1, keepdims=True)
+    return responsibilities
+
+def m_step(X, responsibilities):
+    """M-step: update weights, means, covariances"""
+    N, D = X.shape
+    K = responsibilities.shape[1]
+    
+    Nk = responsibilities.sum(axis=0)
+    weights = Nk / N
+    
+    means = np.zeros((K, D))
+    covariances = []
+    
+    for k in range(K):
+        means[k] = (responsibilities[:, k][:, None] * X).sum(axis=0) / Nk[k]
+        diff = X - means[k]
+        cov_k = np.dot((responsibilities[:, k][:, None] * diff).T, diff) / Nk[k]
+        covariances.append(cov_k)
+    
+    return weights, means, covariances
+
+# Run EM
+max_iters = 100
+tol = 1e-4
+log_likelihoods = []
+
+for i in range(max_iters):
+    # E-step
+    responsibilities = e_step(X, weights, means, covariances)
+    
+    # M-step
+    weights, means, covariances = m_step(X, responsibilities)
+    
+    # Compute log likelihood
+    ll = 0
+    for k in range(K):
+        rv = multivariate_normal(mean=means[k], cov=covariances[k])
+        ll += np.sum(np.log(weights[k] * rv.pdf(X) + 1e-10))  # add small value to avoid log(0)
+    log_likelihoods.append(ll)
+    
+    # Check convergence
+    if i > 0 and abs(log_likelihoods[-1] - log_likelihoods[-2]) < tol:
+        print(f"Converged at iteration {i}")
+        break
+
+print("Final means:\n", means)
+print("Final weights:\n", weights)
+
+# Plot results
+plt.scatter(X[:, 0], X[:, 1], c=responsibilities[:, 0], cmap='coolwarm', alpha=0.5)
+plt.scatter(means[:, 0], means[:, 1], c='black', marker='x', s=100, label='Means')
+plt.title("EM Algorithm: GMM Clustering")
+plt.xlabel("X1")
+plt.ylabel("X2")
+plt.legend()
+plt.show()
