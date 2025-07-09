@@ -1,0 +1,43 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Generate synthetic nonlinear data
+np.random.seed(0)
+X = np.sort(5 * np.random.rand(80, 1), axis=0)
+y = np.sin(X).ravel() + np.random.normal(0, 0.2, X.shape[0])
+
+# Linear Regression Model
+lin_reg = LinearRegression()
+lin_reg.fit(X, y)
+y_lin_pred = lin_reg.predict(X)
+
+# Polynomial Regression Model (degree 4)
+poly_features = PolynomialFeatures(degree=4)
+X_poly = poly_features.fit_transform(X)
+
+poly_reg = LinearRegression()
+poly_reg.fit(X_poly, y)
+y_poly_pred = poly_reg.predict(X_poly)
+
+# Evaluate Models
+print("Linear Regression:")
+print(f"  MSE: {mean_squared_error(y, y_lin_pred):.4f}")
+print(f"  R² Score: {r2_score(y, y_lin_pred):.4f}")
+
+print("\nPolynomial Regression (Degree 4):")
+print(f"  MSE: {mean_squared_error(y, y_poly_pred):.4f}")
+print(f"  R² Score: {r2_score(y, y_poly_pred):.4f}")
+
+# Plot Results
+plt.figure(figsize=(10, 6))
+plt.scatter(X, y, color='black', label='Data')
+plt.plot(X, y_lin_pred, label='Linear Regression', color='blue')
+plt.plot(X, y_poly_pred, label='Polynomial Regression (deg=4)', color='red')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Linear vs Polynomial Regression')
+plt.legend()
+plt.show()
