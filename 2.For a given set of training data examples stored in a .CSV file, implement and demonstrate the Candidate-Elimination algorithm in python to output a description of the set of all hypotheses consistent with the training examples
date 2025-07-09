@@ -1,0 +1,55 @@
+import csv
+
+def load_data(filename):
+    with open(filename, 'r') as file:
+        data = list(csv.reader(file))
+        header = data[0]
+        examples = data[1:]
+    return examples
+
+def candidate_elimination(examples):
+    num_attributes = len(examples[0]) - 1
+    S = ['Ø'] * num_attributes
+    G = [['?'] * num_attributes]
+
+    for example in examples:
+        inputs = example[:-1]
+        label = example[-1]
+
+        if label == 'Yes':  # Positive example
+            # Remove from G any hypothesis inconsistent with the example
+            G = [g for g in G if all(g[i] == '?' or g[i] == inputs[i] for i in range(num_attributes))]
+
+            for i in range(num_attributes):
+                if S[i] == 'Ø':
+                    S[i] = inputs[i]
+                elif S[i] != inputs[i]:
+                    S[i] = '?'
+
+        elif label == 'No':  # Negative example
+            # Remove from S any hypothesis that is consistent with the example
+            if all(S[i] == '?' or S[i] == inputs[i] for i in range(num_attributes)):
+                S = ['Ø'] * num_attributes
+
+            new_G = []
+            for g in G:
+                if all(g[i] == '?' or g[i] == inputs[i] for i in range(num_attributes)):
+                    for i in range(num_attributes):
+                        if g[i] == '?':
+                            if S[i] != '?':
+                                new_hypothesis = g.copy()
+                                new_hypothesis[i] = S[i]
+                                if new_hypothesis not in new_G:
+                                    new_G.append(new_hypothesis)
+                else:
+                    new_G.append(g)
+            G = new_G
+
+    return S, G
+
+# Load and run
+examples = load_data('data.csv')
+S_final, G_final = candidate_elimination(examples)
+
+print("Final Specific Hypothesis (S):", S_final)
+print("Final General Hypotheses (G):", G_final)
