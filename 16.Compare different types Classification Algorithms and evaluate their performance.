@@ -1,0 +1,67 @@
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load dataset
+iris = load_iris()
+X, y = iris.data, iris.target
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Define models to compare
+models = {
+    "Logistic Regression": LogisticRegression(max_iter=200),
+    "K-Nearest Neighbors": KNeighborsClassifier(n_neighbors=3),
+    "Support Vector Machine": SVC(kernel='linear'),
+    "Decision Tree": DecisionTreeClassifier(random_state=42),
+    "Random Forest": RandomForestClassifier(random_state=42),
+    "Naive Bayes": GaussianNB()
+}
+
+# Evaluate models
+results = []
+
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+    recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+    f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+    
+    results.append({
+        "Model": name,
+        "Accuracy": accuracy,
+        "Precision": precision,
+        "Recall": recall,
+        "F1-Score": f1
+    })
+
+# Convert results to DataFrame
+results_df = pd.DataFrame(results).set_index("Model")
+
+# Display results table
+print(results_df)
+
+# Plot comparison
+plt.figure(figsize=(10, 6))
+sns.barplot(data=results_df.reset_index().melt(id_vars='Model'), x='Model', y='value', hue='variable')
+plt.title("Comparison of Classification Algorithms on Iris Dataset")
+plt.ylabel("Score")
+plt.ylim(0, 1)
+plt.legend(loc='lower right')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
