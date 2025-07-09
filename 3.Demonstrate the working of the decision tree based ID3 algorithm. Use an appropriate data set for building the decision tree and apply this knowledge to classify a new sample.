@@ -1,0 +1,48 @@
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+
+# Dataset
+features = ['Outlook', 'Temperature', 'Humidity', 'Wind']
+X = [
+    ['Sunny', 'Hot', 'High', 'Weak'],
+    ['Sunny', 'Hot', 'High', 'Strong'],
+    ['Overcast', 'Hot', 'High', 'Weak'],
+    ['Rain', 'Mild', 'High', 'Weak'],
+    ['Rain', 'Cool', 'Normal', 'Weak'],
+    ['Rain', 'Cool', 'Normal', 'Strong'],
+    ['Overcast', 'Cool', 'Normal', 'Strong'],
+    ['Sunny', 'Mild', 'High', 'Weak'],
+    ['Sunny', 'Cool', 'Normal', 'Weak'],
+    ['Rain', 'Mild', 'Normal', 'Weak'],
+    ['Sunny', 'Mild', 'Normal', 'Strong'],
+    ['Overcast', 'Mild', 'High', 'Strong'],
+    ['Overcast', 'Hot', 'Normal', 'Weak'],
+    ['Rain', 'Mild', 'High', 'Strong']
+]
+y = ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes',
+     'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']
+
+# Convert categorical data to numeric using LabelEncoder
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+
+X_encoded = []
+encoders = []
+for i in range(len(X[0])):
+    le_i = LabelEncoder()
+    column = [row[i] for row in X]
+    X_encoded.append(le_i.fit_transform(column))
+    encoders.append(le_i)
+
+# Transpose to get back to list of rows
+X_transformed = list(zip(*X_encoded))
+
+# Encode target
+y_encoded = le.fit_transform(y)
+
+# Train Decision Tree (ID3 uses entropy)
+clf = DecisionTreeClassifier(criterion='entropy')
+clf.fit(X_transformed, y_encoded)
+
+# Display tree
+tree.plot_tree(clf, feature_names=features, class_names=le.classes_, filled=True)
